@@ -1,0 +1,31 @@
+{:paths ["src" "resources"]
+
+ :deps {org.clojure/clojure {:mvn/version "RELEASE"}
+        com.taoensso/timbre {:mvn/version "RELEASE"}
+        com.wsscode/pathom {:mvn/version "RELEASE"}
+        com.fulcrologic/fulcro {:mvn/version "RELEASE"}
+        http-kit {:mvn/version "RELEASE"}
+        mount {:mvn/version "RELEASE"}
+        org.clojure/core.async {:mvn/version "RELEASE"}
+        net.mikera/core.matrix {:mvn/version "RELEASE"}
+        ring/ring-core {:mvn/version "RELEASE"}
+        ring/ring-defaults {:mvn/version "RELEASE"}
+        io.replikativ/datahike {:mvn/version "0.3.1-SNAPSHOT"}
+        clj-http {:mvn/version "3.10.1"}
+        manifold {:mvn/version "0.1.8"}
+        ;funcool/promesa {:mvn/version "5.1.0"}
+        cheshire {:mvn/version "RELEASE"}}
+
+  :aliases {:dev {:extra-paths ["src/test" "src/dev"]
+                  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+                  :extra-deps {org.clojure/clojurescript {:mvn/version "RELEASE"}
+                               thheller/shadow-cljs {:mvn/version "RELEASE"}
+                               binaryage/devtools {:mvn/version "RELEASE"}
+                               com.bhauman/rebel-readline {:mvn/version "RELEASE"}
+                               org.clojure/tools.namespace {:mvn/version "RELEASE"}}
+                  :main-opts ["-m" "rebel-readline.main"]}
+
+            :reveal {:extra-deps {vlaaad/reveal {:mvn/version "0.1.0-ea20"}}
+                     :main-opts ["-m" "vlaaad.reveal.repl"]}
+
+            :etaoin {:extra-deps {etaoin/etaoin {:mvn/version "0.3.6"}}}}}
