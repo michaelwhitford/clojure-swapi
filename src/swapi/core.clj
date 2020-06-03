@@ -7,7 +7,6 @@
             [manifold.executor :refer [fixed-thread-executor]]))
 
 (defn reset []
-  (shutdown-agents)
   (require 'swapi.core :reload-all))
 
 (def config (atom {:url "https://swapi.dev/api"
