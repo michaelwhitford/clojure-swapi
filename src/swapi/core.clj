@@ -41,12 +41,15 @@
     nil)
 
 (defmacro create-queries!
-  "Create 3 new functions for one action of the api
+  "Create 4 new functions for one action of the api
   `action` required: config set"
   [action]
-  (def (str 'action "!") (partial query! 'action))
-  (def (str 'action "+") (partial query+ pool 'action))
-  (def (str 'action "-schema!") (partial (str 'action "!") 'action "schema")))
+  `(let [a# ~action]
+    (do
+      (def ~(symbol (str a# "!")) (partial query! a#))
+      (def ~(symbol (str a# "+")) (partial query+ pool a#))
+      (def ~(symbol (str a# "-schema!")) (partial (str a# "!") a# "schema"))
+      (def ~(symbol (str a# "-schema+")) (partial (str a# "+") a# "schema")))))
 
 (def pool (fixed-thread-executor 4))
 
