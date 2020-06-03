@@ -46,7 +46,7 @@
   [action]
   (def (str 'action "!") (partial query! 'action))
   (def (str 'action "+") (partial query+ pool 'action))
-  (def (str 'action "-schema!") (partial (str 'action "!") 'action)))
+  (def (str 'action "-schema!") (partial (str 'action "!") 'action "schema")))
 
 (def pool (fixed-thread-executor 4))
 
