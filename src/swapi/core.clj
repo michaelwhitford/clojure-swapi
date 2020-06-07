@@ -4,7 +4,8 @@
             [cheshire.core :as json]
             [clj-http.client :as http]
             [manifold.deferred :as d]
-            [manifold.executor :refer [fixed-thread-executor]]))
+            [manifold.executor :refer [fixed-thread-executor]]
+            [medley.core :as m]))
 
 (defn reset []
   (require 'swapi.core :reload-all))
@@ -18,16 +19,23 @@
                    :pool (fixed-thread-executor 4)}))
 
 (defn api!
-  "get all api resources and add to config"
+  "get all api resources and urls"
   []
   (let [url (:url @config)
         options (:options @config)]
-    (swap! config assoc :resources (:body (http/get url options)))))
+    (:body (http/get url options))))
 
-(api!)
+(defn add-api!
+  "add api resources to config"
+  []
+  (let [m (reduce-kv (fn [m k v] (assoc m k [:url v])) {} (api!))]
+    (swap! config assoc :resources m))
+  nil)
+
+(add-api!)
 
 (defn allowed?
-  "predicate to check if the method is in the config set
+  "check for method in config set
     `method` required: config set"
   [method]
   (contains? (:methods @config) method))
@@ -77,6 +85,15 @@
 (create-queries! "species")
 (create-queries! "vehicles")
 (create-queries! "spaceships")
+
+(defn add-schemas!
+  "query for schemas and add to config"
+  []
+  (let [r (:resources @config)]
+    (m/map-kv-vals (fn [k v] (assoc v :schema (query! (str (name k)) "schema"))) r)))
+  ;(reduce #(assoc-in %1 [%2 :schema] (query! (str (name %2)) "schema")) r (keys r))))
+  ;(m/map-kv-vals (fn [k v] (assoc v :schema (query! (str (name k)) "schema"))) r))
+  ;(reduce-kv (fn [m k v] (assoc m k (assoc v :schema (query! (str (name k)) "schema")))) {} r))
 
 (comment
   (people! 1)
