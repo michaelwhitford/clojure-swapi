@@ -10,55 +10,73 @@
   (require 'swapi.core :reload-all))
 
 (def config (atom {:url "https://swapi.dev/api"
-                   :actions #{"people" "planets" "films"
-                              "starships" "vehicles" "species"}))
+                   :methods #{"people" "planets" "films"
+                              "starships" "vehicles" "species"}
+                   :options {:as :json
+                             ; :debug true
+                             :accept :json}
+                   :pool (fixed-thread-executor 4)}))
 
-(def options (atom {:as :json
-                    ; :debug true
-                    :accept :json}))
+(defn api!
+  "get all api resources and add to config"
+  []
+  (let [url (:url @config)
+        options (:options @config)]
+    (swap! config assoc :resources (:body (http/get url options)))))
+
+(api!)
+
+(defn allowed?
+  "predicate to check if the method is in the config set
+    `method` required: config set"
+  [method]
+  (contains? (:methods @config) method))
+
 (defn query!
   "query to swapi.dev
-    `action` required: config set
+    `method` required: config set
     `id` optional"
-  [action & args]
-  (if (contains? (:actions @config) action)
-    (if-let [id (first args)]
-      (:body (http/get (format "%s/%s/%s" (:url @config) action id) @options))
-      (:results (:body (http/get (format "%s/%s" (:url @config) action) @options))))
+  [method & args]
+  (if (allowed? method)
+    (let [id (first args)
+          url (:url @config)
+          options (:options @config)]
+      (if id
+        (:body (http/get (format "%s/%s/%s" url method id) options))
+        (:results (:body (http/get (format "%s/%s" url method) options)))))
     nil))
 
 (defn query+
   "asynchronous query to swapi.dev
-    `action` required: config set
+    `method` required: config set
     `id` optional"
-  [pool action & args]
-  (if (contains? (:actions @config) action)
+  [method & args]
+  (if (allowed? method)
     (let [id (first args)
-          deferred (d/deferred pool)
-          chain (d/chain deferred #(future (if id (query! action %) (query! %))))]
-      (d/success! deferred (or id action))
+          deferred (d/deferred (:pool @config))
+          chain (d/chain deferred #(future (if id (query! method %) (query! %))))]
+      (d/success! deferred (or id method))
       chain)
-    nil)
+    nil))
 
 (defmacro create-queries!
-  "Create 4 new functions for one action of the api
-  `action` required: config set"
-  [action]
-  `(let [a# ~action]
-    (do
-      (def ~(symbol (str a# "!")) (partial query! a#))
-      (def ~(symbol (str a# "+")) (partial query+ pool a#))
-      (def ~(symbol (str a# "-schema!")) (partial (str a# "!") a# "schema"))
-      (def ~(symbol (str a# "-schema+")) (partial (str a# "+") a# "schema")))))
-
-(def pool (fixed-thread-executor 4))
+  "Create 3 new functions for one method of the api
+    `method` required: config set"
+  [method]
+  (let [syn (format "%s!" method)
+        asyn (format "%s+" method)
+        schema (format "%s-schema!" method)]
+    `(do
+      (def ~(symbol syn) (partial query! ~method))
+      (def ~(symbol asyn) (partial query+ ~method))
+      (def ~(symbol schema) (partial query! ~method "schema")))))
 
 (create-queries! "people")
 (create-queries! "planets")
 (create-queries! "films")
-(create-queries! "starships")
-(create-queries! "vehicles")
 (create-queries! "species")
+(create-queries! "vehicles")
+(create-queries! "spaceships")
 
 (comment
   (people! 1)
