@@ -14,6 +14,7 @@
         clj-http {:mvn/version "3.10.1"}
         manifold {:mvn/version "0.1.8"}
         ;funcool/promesa {:mvn/version "5.1.0"}
+        medley {:mvn/version "RELEASE"}
         cheshire {:mvn/version "RELEASE"}}
 
   :aliases {:dev {:extra-paths ["src/test" "src/dev"]
