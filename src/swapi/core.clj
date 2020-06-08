@@ -28,7 +28,7 @@
 (defn add-api!
   "add api resources to config"
   []
-  (let [m (reduce-kv (fn [m k v] (assoc m k [:url v])) {} (api!))]
+  (let [m (reduce-kv (fn [m k v] (assoc-in m [k :url] v)) {} (api!))]
     (swap! config assoc :resources m))
   nil)
 
